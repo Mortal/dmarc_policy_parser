@@ -1,4 +1,8 @@
+import logging
 from dmarc_policy_parser import get_dmarc_policy
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 for d in 'gmail.com hotmail.com google.com yahoo.com tdc.dk'.split():
