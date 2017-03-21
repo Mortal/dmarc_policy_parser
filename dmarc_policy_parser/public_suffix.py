@@ -226,7 +226,3 @@ def test():
     for domain, expected in tests:
         v = get_public_suffix(domain)
         assert v == expected, (domain, expected, v)
-
-
-if __name__ == '__main__':
-    test()
