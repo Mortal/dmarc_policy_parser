@@ -1,10 +1,14 @@
 import os
 import time
+import logging
 import urllib.error
 import urllib.request
 
 from dmarc_policy_parser.files import get_path
 from dmarc_policy_parser.exceptions import DmarcException
+
+
+logger = logging.getLogger('dmarc_policy_parser')
 
 
 def download_file(uri, path, timeout=10):
@@ -46,14 +50,24 @@ def fetch_public_suffixes(filename):
                   filename)
 
 
-def get_public_suffixes():
+def get_public_suffixes(max_age=7*24*3600):
+    now = time.time()
+    try:
+        cache_age = now - get_public_suffixes._cache_time
+    except AttributeError:
+        cache_age = None
+    if cache_age is not None and cache_age < max_age:
+        return get_public_suffixes._cache
+
     filename = get_path('public_suffix_list.dat')
     try:
-        st = os.stat(filename)
+        file_mtime = os.stat(filename).st_mtime
     except FileNotFoundError:
         fetch_public_suffixes(filename)
     else:
-        if st.st_mtime < time.time() - 7*24*3600:
+        file_age = now - file_mtime
+        if file_age > max_age:
+            logging.info('Downloading new list of public suffixes')
             fetch_public_suffixes(filename)
 
     exceptions = set()
@@ -74,6 +88,8 @@ def get_public_suffixes():
                 else:
                     rules.add(w)
 
+    get_public_suffixes._cache = rules, exceptions
+    get_public_suffixes._cache_time = now
     return rules, exceptions
 
 
@@ -81,10 +97,8 @@ def get_public_suffix(domain):
     if domain is None:
         return
     domain = domain.lower()
-    try:
-        rules, exceptions = get_public_suffix._cache
-    except AttributeError:
-        get_public_suffix._cache = rules, exceptions = get_public_suffixes()
+    rules, exceptions = get_public_suffixes()
+
     parts_input = domain.split('.')
     if not all(parts_input):
         # Some components are empty
