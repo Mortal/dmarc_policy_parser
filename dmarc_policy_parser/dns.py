@@ -2,15 +2,19 @@ import os
 import re
 import json
 import time
+import logging
 import subprocess
 from dmarc_policy_parser.exceptions import DmarcException
 from dmarc_policy_parser.files import get_path
 
 
+logger = logging.getLogger('dmarc_policy_parser')
+
+
 def fetch_dns_txt_record(domain, timeout=3):
     if domain.startswith('-'):
         raise ValueError('invalid domain %r' % (domain,))
-    print("Looking up %r" % (domain,))
+    logger.info("Looking up %r", domain)
     proc = subprocess.Popen(
         ('host', '-t', 'TXT', domain),
         stdin=subprocess.DEVNULL,
