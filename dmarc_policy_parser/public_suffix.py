@@ -1,15 +1,44 @@
 import os
 import time
-import subprocess
+import urllib.error
+import urllib.request
 
 from dmarc_policy_parser.files import get_path
+from dmarc_policy_parser.exceptions import DmarcException
 
 
-def download_file(uri, path):
-    subprocess.check_call(download_file.wget + ('-O', path, uri))
-
-
-download_file.wget = ('wget', '--no-use-server-timestamps')
+def download_file(uri, path, timeout=10):
+    start_time = time.time()
+    try:
+        p = urllib.request.urlopen(uri, None, timeout)
+    except urllib.error.URLError as exn:
+        raise DmarcException('Could not download file') from exn
+    tmp_path = path + '.tmp'
+    try:
+        fp = open(tmp_path, 'wb')
+    except Exception as exn:
+        p.close()
+        raise DmarcException('Could not open output file') from exn
+    try:
+        try:
+            size = int(p.getheader('Content-Length'))
+        except (KeyError, ValueError):
+            size = None
+        while True:
+            elapsed_time = time.time() - start_time
+            if elapsed_time > timeout:
+                raise DmarcException('download_file timed out')
+            b = p.read(4096)
+            if not b:
+                break
+            fp.write(b)
+    finally:
+        p.close()
+        fp.close()
+    try:
+        os.rename(tmp_path, path)
+    except Exception as exn:
+        raise DmarcException('Could not rename temporary file') from exn
 
 
 def fetch_public_suffixes(filename):
