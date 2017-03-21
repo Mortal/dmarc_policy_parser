@@ -67,7 +67,7 @@ def get_public_suffixes(max_age=7*24*3600):
     else:
         file_age = now - file_mtime
         if file_age > max_age:
-            logging.info('Downloading new list of public suffixes')
+            logger.info('Downloading new list of public suffixes')
             fetch_public_suffixes(filename)
 
     exceptions = set()
