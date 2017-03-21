@@ -89,10 +89,14 @@ def fetch_dns_txt_record(domain, timeout=3):
 def get_dns_txt_record(domain, timeout=3, max_age=24*3600):
     filename = get_path('dns_txt_cache.json')
     try:
-        with open(filename) as fp:
-            cache = json.load(fp)
-    except FileNotFoundError:
-        cache = {}
+        cache = get_dns_txt_record.cache
+    except AttributeError:
+        try:
+            with open(filename) as fp:
+                cache = get_dns_txt_record.cache = json.load(fp)
+        except FileNotFoundError:
+            cache = get_dns_txt_record.cache = {}
+
     now = time.time()
     if domain in cache:
         cached_result, cached_time = cache[domain]
