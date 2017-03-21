@@ -103,7 +103,7 @@ def get_dns_txt_record(domain, timeout=3, max_age=24*3600):
     cache[domain] = [result, now]
     tmp_filename = filename + '.tmp'
     with open(tmp_filename, 'w') as fp:
-        json.dump(cache, fp, indent=2)
+        json.dump(cache, fp, indent=0)
     os.rename(tmp_filename, filename)
     if reraise_exn:
         raise reraise_exn
