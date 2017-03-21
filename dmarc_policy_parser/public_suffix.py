@@ -107,7 +107,7 @@ def get_public_suffix(domain):
             if i > 0:
                 return '.'.join(parts_input[i-1:])
             else:
-                return None
+                return
 
 
 def test():
