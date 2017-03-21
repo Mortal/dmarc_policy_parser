@@ -5,10 +5,16 @@ import subprocess
 from dmarc_policy_parser.files import get_path
 
 
+def download_file(uri, path):
+    subprocess.check_call(download_file.wget + ('-O', path, uri))
+
+
+download_file.wget = ('wget', '--no-use-server-timestamps')
+
+
 def fetch_public_suffixes(filename):
-    subprocess.check_call(
-        ('wget', '--no-use-server-timestamps', '-O', filename,
-         'https://publicsuffix.org/list/public_suffix_list.dat'))
+    download_file('https://publicsuffix.org/list/public_suffix_list.dat',
+                  filename)
 
 
 def get_public_suffixes():
