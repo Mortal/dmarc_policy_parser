@@ -139,6 +139,7 @@ def parse_dmarc_policy(record):
 def _get_dmarc_record(domain, *args, **kwargs):
     subdomain = '_dmarc.%s' % domain
     # The following call might raise DmarcException
+    # in case of a runtime error in the DNS lookup
     records = get_dns_txt_record(subdomain, *args, **kwargs) or ()
     records = [r for r in records if re.match(DMARC_RECORD_PATTERN, r)]
     if records:
