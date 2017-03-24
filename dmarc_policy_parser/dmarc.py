@@ -174,7 +174,7 @@ def get_dmarc_policy(domain, *args, **kwargs):
     record = get_dmarc_record(domain, *args, **kwargs)
     if not record:
         return 'none'
-    request = record.get('request', 'none')
+    request = record.get('request')
     srequest = record.get('srequest')
     if record['domain'] != domain and srequest in POLICY:
         return srequest
