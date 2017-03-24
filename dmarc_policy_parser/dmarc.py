@@ -136,23 +136,15 @@ def parse_dmarc_policy(record):
     return _Parser(record).values
 
 
-def get_dmarc_record(domain, *args, **kwargs):
-    '''
-    Implements DMARC Policy Discovery [DMARC, Sec. 6.6.3].
-    https://tools.ietf.org/html/rfc7489#section-6.6.3
-    '''
+def _get_dmarc_record(domain, *args, **kwargs):
     subdomain = '_dmarc.%s' % domain
     # The following call might raise DmarcException
     records = get_dns_txt_record(subdomain, *args, **kwargs) or ()
     records = [r for r in records if re.match(DMARC_RECORD_PATTERN, r)]
-    if not records:
-        org_domain = get_public_suffix(domain)
-        if org_domain is not None and org_domain != domain:
-            return get_dmarc_record(org_domain, *args, **kwargs)
-    if len(records) > 1:
-        raise DmarcException(
-            'more than one DMARC policy published for %r' % (domain,))
     if records:
+        if len(records) > 1:
+            raise DmarcException(
+                'more than one DMARC policy published for %r' % (domain,))
         try:
             result = parse_dmarc_policy(records[0])
         except ValueError as exn:
@@ -161,6 +153,19 @@ def get_dmarc_record(domain, *args, **kwargs):
                 (records[0], exn))
         result['domain'] = domain
         return result
+
+
+def get_dmarc_record(domain, *args, **kwargs):
+    '''
+    Implements DMARC Policy Discovery [DMARC, Sec. 6.6.3].
+    https://tools.ietf.org/html/rfc7489#section-6.6.3
+    '''
+    record = _get_dmarc_record(domain, *args, **kwargs)
+    if not record:
+        org_domain = get_public_suffix(domain)
+        if org_domain != domain:
+            record = _get_dmarc_record(org_domain, *args, **kwargs)
+    return record
 
 
 def get_dmarc_policy(domain, *args, **kwargs):
