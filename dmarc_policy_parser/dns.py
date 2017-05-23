@@ -60,6 +60,7 @@ def fetch_dns_txt_record(domain, timeout=3):
                 'Could not parse line %r' % (line[:500],))
         return ''
 
+    current_domain = domain
     for line in stdout.splitlines():
         mo = re.match(pattern, line)
         if not mo:
@@ -68,13 +69,15 @@ def fetch_dns_txt_record(domain, timeout=3):
         if record_escaped is None:
             if mo.group('alias'):
                 # is an alias for
-                return []
-            # has no TXT record
-            continue
-        if domain_ != domain:
+                current_domain = mo.group('alias')
+                continue
+            else:
+                # has no TXT record
+                continue
+        if domain_ != current_domain:
             raise DmarcException(
                 'host program returned TXT record for %r, expected %r' %
-                (domain_, domain))
+                (domain_, current_domain))
 
         # Parse the output of host.
         # See lib/dns/rdata.c in bind. I think multitxt_totext is the one
