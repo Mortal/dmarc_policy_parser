@@ -46,8 +46,8 @@ def download_file(uri, path, timeout=10):
 
 
 def fetch_public_suffixes(filename):
-    download_file('https://publicsuffix.org/list/public_suffix_list.dat',
-                  filename)
+    download_file('https://raw.githubusercontent.com/publicsuffix/list/' +
+                  'master/public_suffix_list.dat', filename)
 
 
 def get_public_suffixes(max_age=7*24*3600):
