@@ -9,7 +9,7 @@ with open('README.md') as readme:
 
 setup(
     name='dmarc_policy_parser',
-    version='0.1',
+    version='0.2',
     description='Parse DMARC Policies published in DNS',
     long_description=README,
     url='https://github.com/Mortal/dmarc_policy_parser',

@@ -170,10 +170,19 @@ def get_dmarc_record(domain, *args, **kwargs):
 
 
 def get_dmarc_policy(domain, *args, **kwargs):
+    '''
+    Returns the effective DMARC policy for the given domain.
+
+    One of: (None, 'none', 'quarantine', 'reject').
+
+    New in version 0.2: Returns None if the domain has no DMARC record.
+    Previously 'none' would be returned, making it impossible to
+    distinguish "no DMARC record" from "no action required".
+    '''
     POLICY = ['none', 'quarantine', 'reject']
     record = get_dmarc_record(domain, *args, **kwargs)
     if not record:
-        return 'none'
+        return None
     request = record.get('request')
     srequest = record.get('srequest')
     if record['domain'] != domain and srequest in POLICY:
